@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rescue Bite — رسكيو بايت</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --navy:    #0d1b2e;
+    --navy2:   #142236;
+    --navy3:   #1a2e48;
+    --navy4:   #1e3a57;
+    --gold:    #f5a623;
+    --gold2:   #e8960f;
+    --green:   #1a9e5c;
+    --green2:  #16b56a;
+    --teal:    #0ab5a0;
+    --white:   #ffffff;
+    --gray:    #a8b4c4;
+    --gray2:   #6b7c93;
+    --card:    #162840;
+    --card2:   #1c3250;
+    --r:       16px;
+    --r2:      12px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Cairo', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  /* ── FULL-SCREEN APP SHELL ─────────────────────── */
+  .app {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport height for mobile */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--navy);
+  }
+
+  /* Status bar — only show on desktop as decoration */
+  .status-bar {
+    display: none;
+    flex-shrink: 0;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--navy);
+    flex-shrink: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .header-logo img { height: 100px; object-fit: contain; }
+  .header-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--card);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--white);
+    font-size: 17px;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .header-btn:active { background: var(--card2); }
+
+  /* Screens */
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--navy);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    transform: translateX(-16px);
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen { scrollbar-width: none; }
+
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    display: flex;
+    background: var(--card);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+    /* safe area for notch phones */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 9px 0 5px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--gray2);
+    font-family: 'Cairo', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    gap: 3px;
+    position: relative;
+  }
+  .nav-item.active { color: var(--gold); }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-badge {
+    position: absolute;
+    top: 7px; right: 50%;
+    transform: translateX(12px);
+    width: 7px; height: 7px;
+    background: #e74c3c;
+    border-radius: 50%;
+    border: 1.5px solid var(--card);
+  }
+
+  /* ── SHARED COMPONENTS ──────────────────────────── */
+  .pad { padding: 0 16px; }
+
+  .card { background: var(--card); border-radius: var(--r); padding: 14px; }
+  .card-white { background: var(--white); border-radius: var(--r); padding: 14px; color: var(--navy); }
+
+  .btn-gold {
+    width: 100%; padding: 15px;
+    background: var(--gold); border: none; border-radius: var(--r2);
+    color: var(--navy); font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s;
+  }
+  .btn-gold:active { background: var(--gold2); transform: scale(.98); }
+
+  .btn-green {
+    width: 100%; padding: 15px;
+    background: var(--green); border: none; border-radius: var(--r2);
+    color: var(--white); font-family: 'Cairo', sans-serif;
+    font-size: 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-green:active { background: var(--green2); }
+
+  .btn-ghost {
+    background: none; border: none;
+    color: var(--gray); font-family: 'Cairo', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    padding: 12px; text-align: center; width: 100%;
+  }
+
+  .section-title {
+    font-size: 15px; font-weight: 800;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .section-link { font-size: 12px; color: var(--gold); cursor: pointer; font-weight: 600; }
+
+  .divider { height: 1px; background: rgba(255,255,255,.07); margin: 10px 0; }
+
+  /* ── HOME ───────────────────────────────────────── */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: var(--r2); padding: 12px 8px; text-align: center;
+  }
+  .stat-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(245,166,35,.15);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 6px; font-size: 16px;
+  }
+  .stat-num { font-size: 20px; font-weight: 900; color: var(--gold); line-height:1; }
+  .stat-lbl { font-size: 10px; color: var(--gray); margin-top: 3px; }
+  .stat-chg { font-size: 10px; color: var(--green2); margin-top: 2px; font-weight: 700; }
+
+  .action-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .action-card {
+    background: var(--card); border-radius: var(--r); padding: 14px 12px;
+    cursor: pointer; transition: background .2s;
+    border: 1.5px solid transparent;
+  }
+  .action-card:active { background: var(--card2); border-color: rgba(245,166,35,.2); }
+  .ac-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 8px;
+  }
+  .ac-title { font-size: 13px; font-weight: 800; }
+  .ac-sub   { font-size: 10px; color: var(--gray); margin-top: 2px; }
+
+  .notif-live {
+    background: var(--card); border-radius: var(--r); padding: 12px;
+    display: flex; gap: 10px; align-items: flex-start; cursor: pointer;
+    border: 1.5px solid rgba(10,181,160,.2);
+  }
+  .notif-dot {
+    width: 9px; height: 9px; background: var(--teal); border-radius: 50%;
+    margin-top: 4px; flex-shrink: 0; box-shadow: 0 0 6px var(--teal);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.5; transform:scale(1.3); }
+  }
+  .notif-title  { font-size: 13px; font-weight: 700; }
+  .notif-body   { font-size: 11px; color: var(--gray); margin-top: 2px; line-height: 1.45; }
+  .notif-time   { font-size: 10px; color: var(--gold); margin-top: 4px; font-weight: 600; }
+
+  /* ── DONATE FORM ────────────────────────────────── */
+  .white-sheet {
+    background: var(--white); border-radius: 20px 20px 0 0;
+    padding: 20px 16px 30px; color: var(--navy); min-height: 100%;
+  }
+  .screen-title { font-size: 20px; font-weight: 900; text-align: center; color: var(--navy); }
+  .screen-sub   { font-size: 12px; color: var(--gray2); text-align: center; margin-top: 3px; }
+
+  .food-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 10px; }
+  .food-item {
+    background: #f8f9fa; border-radius: var(--r2);
+    padding: 10px 4px; text-align: center; cursor: pointer;
+    border: 2px solid transparent; transition: all .2s;
+  }
+  .food-item.selected { border-color: var(--gold); background: #fff8ed; }
+  .fi-img { font-size: 26px; }
+  .fi-lbl { font-size: 11px; font-weight: 700; color: var(--navy); margin-top: 5px; }
+
+  .form-label { font-size: 13px; font-weight: 800; color: var(--navy); margin-bottom: 6px; display:flex; align-items:center; gap:5px; }
+
+  .slider-wrap { position: relative; margin-top: 20px; }
+  .qty-bubble {
+    position: absolute; top: -28px;
+    background: var(--navy); color: var(--white);
+    padding: 3px 9px; border-radius: 7px;
+    font-size: 12px; font-weight: 800; pointer-events: none;
+  }
+  .qty-bubble::after {
+    content:''; position:absolute; bottom:-5px; left:50%;
+    transform:translateX(-50%);
+    border:5px solid transparent; border-top-color:var(--navy); border-bottom:none;
+  }
+  .qty-slider {
+    -webkit-appearance: none; width:100%; height:5px; border-radius:3px; outline:none; cursor:pointer;
+    background: linear-gradient(to right, var(--gold) 0%, var(--gold) 30%, #e0e0e0 30%, #e0e0e0 100%);
+  }
+  .qty-slider::-webkit-slider-thumb {
+    -webkit-appearance:none; width:20px; height:20px;
+    border-radius:50%; background:var(--navy); cursor:pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
+  .slider-labels { display:flex; justify-content:space-between; font-size:10px; color:var(--gray2); margin-top:5px; }
+
+  .time-select {
+    width:100%; padding:13px 14px; border:1.5px solid #e0e4e8;
+    border-radius:var(--r2); font-family:'Cairo',sans-serif;
+    font-size:15px; font-weight:700; color:var(--navy); background:var(--white);
+    cursor:pointer; direction:rtl;
+  }
+  .form-input {
+    width:100%; padding:11px 13px; border:1.5px solid #e0e4e8;
+    border-radius:var(--r2); font-family:'Cairo',sans-serif;
+    font-size:13px; color:var(--navy); background:var(--white);
+    direction:rtl; resize:none;
+  }
+  .form-input:focus { outline:none; border-color:var(--gold); }
+
+  .hotel-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 0; border-bottom:1px solid #f0f0f0;
+  }
+  .hotel-row:last-child { border-bottom:none; }
+  .hr-label { font-size:11px; color:var(--gray2); display:flex; align-items:center; gap:5px; }
+  .hr-value { font-size:12px; font-weight:700; color:var(--navy); }
+
+  /* ── LOCKSCREEN NOTIFICATION ────────────────────── */
+  .lockscreen {
+    background: linear-gradient(180deg,#0a1628,#1a2e48);
+    padding: 16px; min-height: 100%;
+  }
+  .ls-time { text-align:center; margin:16px 0; }
+  .ls-date { font-size:13px; color:rgba(255,255,255,.7); }
+  .ls-clock { font-size:68px; font-weight:200; font-family:'Inter',sans-serif; line-height:1.1; }
+
+  .notif-popup {
+    background:rgba(30,44,68,.95); backdrop-filter:blur(20px);
+    border-radius:14px; padding:14px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .np-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .np-app { display:flex; align-items:center; gap:7px; }
+  .np-app img { width:22px; height:22px; border-radius:5px; object-fit:contain; }
+  .np-name { font-size:12px; font-weight:700; }
+  .np-time { font-size:11px; color:var(--gray); }
+  .np-msg  { font-size:15px; font-weight:700; line-height:1.45; margin-bottom:12px; }
+  .np-accept {
+    background:var(--green); border:none; border-radius:9px; padding:13px;
+    color:var(--white); font-family:'Cairo',sans-serif; font-size:16px; font-weight:800;
+    cursor:pointer; width:100%; margin-bottom:7px;
+  }
+  .np-accept:active { background:var(--green2); }
+  .np-ignore {
+    background:rgba(255,255,255,.08); border:none; border-radius:9px; padding:11px;
+    color:var(--white); font-family:'Cairo',sans-serif; font-size:14px; font-weight:600;
+    cursor:pointer; width:100%;
+  }
+
+  /* ── VOLUNTEERS ─────────────────────────────────── */
+  .accepted-banner {
+    background:var(--card); border-radius:var(--r); padding:12px;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid rgba(10,181,160,.25);
+  }
+  .ab-icon {
+    width:40px; height:40px; background:rgba(10,181,160,.12);
+    border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .ab-title { font-size:13px; font-weight:800; color:var(--teal); }
+  .ab-sub   { font-size:11px; color:var(--gray); margin-top:2px; }
+
+  .vol-card {
+    background:var(--card); border-radius:var(--r); padding:12px;
+    display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  }
+  .vol-ava {
+    width:50px; height:50px; border-radius:50%;
+    border:2px solid var(--teal); flex-shrink:0;
+    background:var(--card2); display:flex; align-items:center; justify-content:center;
+    font-size:24px;
+  }
+  .vol-name { font-size:15px; font-weight:800; }
+  .vol-meta { font-size:11px; color:var(--gray); margin-top:3px; display:flex; gap:10px; }
+  .btn-assign {
+    background:var(--gold); border:none; border-radius:9px; padding:9px 16px;
+    color:var(--navy); font-family:'Cairo',sans-serif; font-size:13px; font-weight:800;
+    cursor:pointer; flex-shrink:0; margin-right:auto;
+  }
+  .btn-assign:active { background:var(--gold2); transform:scale(.95); }
+
+  .safety-bar {
+    background:rgba(10,181,160,.06); border-radius:var(--r2); padding:11px 13px;
+    display:flex; align-items:center; justify-content:space-between;
+    border:1px solid rgba(10,181,160,.12); margin:10px 0 20px;
+  }
+  .sb-left { display:flex; align-items:center; gap:9px; }
+  .sb-title { font-size:12px; font-weight:700; color:var(--teal); }
+  .sb-sub   { font-size:10px; color:var(--gray); margin-top:1px; }
+  .btn-sm {
+    background:var(--card); border:1px solid rgba(255,255,255,.1);
+    border-radius:9px; padding:7px 12px; color:var(--white);
+    font-family:'Cairo',sans-serif; font-size:11px; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;
+  }
+
+  /* ── TRACKING ───────────────────────────────────── */
+  .tracking-card {
+    background:var(--card); border-radius:var(--r); padding:14px;
+    display:flex; gap:12px; align-items:center;
+  }
+  .tr-avatar {
+    width:64px; height:64px; border-radius:50%;
+    border:3px solid var(--teal); font-size:32px;
+    background:var(--card2); display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .tr-eta { font-size:38px; font-weight:900; color:var(--teal); line-height:1; }
+  .tr-unit { font-size:14px; color:var(--teal); font-weight:600; }
+  .tr-lbl  { font-size:12px; color:var(--gray); }
+  .tr-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(10,181,160,.12); color:var(--teal);
+    border-radius:20px; padding:3px 10px; font-size:11px; font-weight:700; margin-top:6px;
+  }
+  .tr-badge .dot {
+    width:7px; height:7px; background:var(--teal); border-radius:50%; animation:pulse 1.5s infinite;
+  }
+
+  .chips { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:10px; }
+  .chip {
+    background:var(--card); border-radius:var(--r2); padding:10px 6px; text-align:center;
+  }
+  .chip-icon { font-size:18px; margin-bottom:4px; }
+  .chip-lbl  { font-size:9px; color:var(--gray); }
+  .chip-val  { font-size:11px; font-weight:800; margin-top:2px; }
+
+  .map-box {
+    background:var(--card); border-radius:var(--r); overflow:hidden;
+    height:180px; margin-top:10px; cursor:pointer; position:relative;
+  }
+  .map-svg { position:absolute; inset:0; width:100%; height:100%; }
+
+  /* ── CONFIRM ────────────────────────────────────── */
+  .photo-upload {
+    border:2px dashed #d0d8e4; border-radius:var(--r); padding:28px 16px;
+    text-align:center; cursor:pointer; transition:all .2s; margin-bottom:14px;
+  }
+  .photo-upload:active { border-color:var(--gold); background:#fff8ed; }
+  .pu-icon  { font-size:36px; color:#9ba8bb; margin-bottom:6px; }
+  .pu-title { font-size:15px; font-weight:800; color:var(--navy); }
+  .pu-sub   { font-size:11px; color:var(--gray2); margin-top:3px; }
+
+  .weight-box {
+    display:flex; align-items:center;
+    border:1.5px solid #e0e4e8; border-radius:var(--r2); padding:12px 13px; gap:9px;
+  }
+  .wb-input {
+    flex:1; border:none; outline:none; font-family:'Cairo',sans-serif;
+    font-size:22px; font-weight:900; color:var(--navy); text-align:right;
+    background:transparent; direction:rtl;
+  }
+  .wb-unit { font-size:14px; font-weight:700; color:var(--gray2); }
+
+  .receipt {
+    background:#f8f9fb; border-radius:var(--r); padding:14px;
+    border:1.5px solid #e8ecf0;
+  }
+  .receipt-hdr {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #e8ecf0;
+  }
+  .receipt-title { font-size:14px; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:7px; }
+  .receipt-body  { display:flex; gap:10px; }
+  .receipt-qr {
+    width:72px; height:72px; background:var(--navy); border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:34px; color:var(--white); flex-shrink:0; cursor:pointer;
+  }
+  .receipt-rows { flex:1; }
+  .rr {
+    display:flex; justify-content:space-between; padding:6px 0;
+    border-bottom:1px solid #f0f0f0;
+  }
+  .rr:last-child { border-bottom:none; }
+  .rr-lbl { font-size:10px; color:var(--gray2); display:flex; align-items:center; gap:5px; }
+  .rr-val { font-size:11px; font-weight:700; color:var(--navy); }
+
+  /* ── SUCCESS ────────────────────────────────────── */
+  .success-icon {
+    width:72px; height:72px; background:var(--green); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 14px; font-size:32px;
+    box-shadow:0 8px 20px rgba(26,158,92,.3);
+  }
+  .detail-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 0; border-bottom:1px solid #f0f0f0;
+  }
+  .detail-row:last-child { border-bottom:none; }
+  .dr-lbl { font-size:12px; color:var(--gray2); display:flex; align-items:center; gap:6px; }
+  .dr-val { font-size:13px; font-weight:800; color:var(--navy); }
+  .map-mini {
+    width:100%; height:140px; background:#e8f0f8; border-radius:var(--r2);
+    overflow:hidden; position:relative; margin-top:4px;
+  }
+
+  /* ── REPORTS ────────────────────────────────────── */
+  .month-nav {
+    display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:14px;
+  }
+  .month-btn {
+    background:var(--card); border:none; width:30px; height:30px; border-radius:50%;
+    color:var(--gold); font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .month-lbl { font-size:17px; font-weight:800; color:var(--gold); }
+
+  .chart-wrap { background:var(--card); border-radius:var(--r); padding:14px; }
+  .chart-hdr  { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .chart-hdr-txt { font-size:13px; font-weight:800; }
+  .bars {
+    display:flex; align-items:flex-end; gap:5px; height:90px;
+    padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,.07);
+  }
+  .bar-group { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .bar {
+    width:100%; background:var(--gold); border-radius:4px 4px 0 0;
+    position:relative; transition:height .5s;
+  }
+  .bar::after {
+    content:attr(data-v); position:absolute; top:-18px; left:50%;
+    transform:translateX(-50%); font-size:9px; font-weight:800; white-space:nowrap; color:var(--white);
+  }
+  .bar-lbl { font-size:8px; color:var(--gray); text-align:center; line-height:1.3; }
+  .chart-legend { display:flex; align-items:center; gap:5px; margin-top:9px; font-size:10px; color:var(--gray); }
+  .legend-dot { width:10px; height:10px; background:var(--gold); border-radius:2px; }
+
+  .report-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+  .rs {
+    background:var(--card); border-radius:var(--r2); padding:12px 8px; text-align:center;
+  }
+  .rs-icon {
+    width:36px; height:36px; border-radius:50%; background:rgba(245,166,35,.1);
+    display:flex; align-items:center; justify-content:center; font-size:18px; margin:0 auto 6px;
+  }
+  .rs-num { font-size:20px; font-weight:900; line-height:1; }
+  .rs-lbl { font-size:10px; color:var(--gray); margin-top:3px; }
+  .rs-chg { font-size:10px; color:var(--green2); font-weight:700; margin-top:2px; }
+
+  .impact-card {
+    background:var(--card); border-radius:var(--r); padding:14px;
+    display:flex; align-items:center; gap:10px; margin-top:10px;
+  }
+  .impact-title { font-size:13px; font-weight:800; }
+  .impact-body  { font-size:11px; color:var(--gray); margin-top:3px; line-height:1.45; }
+  .impact-tag   { font-size:11px; color:var(--gold); font-weight:700; margin-top:4px; }
+
+  /* ── CERTIFICATE ────────────────────────────────── */
+  .cert-wrap { padding:16px 16px 24px; text-align:center; }
+  .cert-badge {
+    width:180px; height:180px; border-radius:50%;
+    background:radial-gradient(circle,#2a1800,#1a0e00);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto; font-size:70px;
+    border:3px solid rgba(245,166,35,.25);
+    box-shadow:0 0 30px rgba(245,166,35,.1);
+    position:relative; overflow:hidden;
+  }
+  .cert-badge::before {
+    content:''; position:absolute; inset:12px; border-radius:50%;
+    border:1.5px solid rgba(245,166,35,.35);
+  }
+  .cert-en { font-size:20px; font-weight:900; margin-top:14px; }
+  .cert-ar { font-size:16px; color:var(--gold); font-weight:800; margin-top:3px; }
+  .cert-sub { font-size:12px; color:var(--gray); margin-top:6px; line-height:1.5; }
+  .cert-divider {
+    display:flex; align-items:center; gap:10px;
+    margin:14px 0; color:var(--gold); font-size:11px; font-weight:700;
+  }
+  .cert-divider::before, .cert-divider::after {
+    content:''; flex:1; height:1px; background:rgba(245,166,35,.25);
+  }
+  .cert-stat {
+    background:var(--card); border-radius:var(--r); padding:14px;
+    display:flex; align-items:center; gap:12px; margin-bottom:8px;
+  }
+  .cs-emoji { font-size:32px; }
+  .cs-num   { font-size:22px; font-weight:900; color:var(--gold); line-height:1; }
+  .cs-lbl   { font-size:11px; color:var(--white); font-weight:600; }
+  .cs-sub   { font-size:10px; color:var(--gray); margin-top:1px; }
+  .together {
+    background:var(--card); border-radius:var(--r); padding:12px;
+    display:flex; align-items:center; gap:10px; margin-bottom:8px;
+    border:1px solid rgba(245,166,35,.12);
+  }
+  .tog-title { font-size:13px; font-weight:800; color:var(--gold); display:flex; align-items:center; gap:5px; }
+  .tog-body  { font-size:11px; color:var(--gray); margin-top:3px; line-height:1.45; }
+
+  /* ── TOAST ──────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(22,40,64,.95); backdrop-filter:blur(10px);
+    color: var(--white); padding: 10px 20px; border-radius: 24px;
+    font-size: 13px; font-weight: 700;
+    box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    z-index: 9999; opacity: 0;
+    transition: opacity .25s, transform .25s;
+    pointer-events: none; white-space: nowrap;
+    border: 1px solid rgba(255,255,255,.1);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(-4px); }
+
+  /* ── DESKTOP: show phone frame ──────────────────── */
+  @media (min-width: 600px) {
+    body { background: #060e1a; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .app {
+      width: 390px; height: 844px;
+      border-radius: 48px;
+      box-shadow: 0 0 0 10px #1a1a2e, 0 0 0 12px #252550, 0 40px 80px rgba(0,0,0,.8);
+      overflow: hidden;
+    }
+    .status-bar {
+      display: flex; justify-content:space-between; align-items:center;
+      padding: 14px 24px 6px; font-size:12px; font-weight:600;
+      background:var(--navy); font-family:'Inter',sans-serif;
+    }
+    .sb-time { font-size:15px; font-weight:700; }
+    .sb-icons { display:flex; gap:5px; align-items:center; }
+    .sb-icons svg { width:15px; height:15px; fill:var(--white); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Status bar (desktop only) -->
+  <div class="status-bar">
+    <span class="sb-time">9:41</span>
+    <div class="sb-icons">
+      <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <!-- Screens -->
+  <div class="screens">
+
+    <!-- ══ HOME ══════════════════════════════════════ -->
+    <div class="screen active" id="screen-home">
+      <div class="header">
+        <div class="header-logo">
+          <img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="Rescue Bite">
+        </div>
+        <button class="header-btn" onclick="showToast('🔔 لا توجد إشعارات جديدة')">🔔</button>
+      </div>
+      <div style="padding:0 16px 24px">
+        <!-- Hero card -->
+        <div style="background:var(--card);border-radius:var(--r);padding:14px;background:linear-gradient(135deg,var(--navy3),var(--card));margin-bottom:14px">
+          <div style="font-size:12px;color:var(--gray)">أهلاً بك 👋</div>
+          <div style="font-size:18px;font-weight:900;margin-top:2px">فندق النخيل — أحمد خالد</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:3px">ساعد اليوم في إنقاذ طعام لمستحقيه</div>
+        </div>
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-num">180</div><div class="stat-lbl">مستفيد</div><div class="stat-chg">▲ 15%</div></div>
+          <div class="stat-card"><div class="stat-icon">🏨</div><div class="stat-num">12</div><div class="stat-lbl">فندق</div><div class="stat-chg">▲ 20%</div></div>
+          <div class="stat-card"><div class="stat-icon">♻️</div><div class="stat-num">240</div><div class="stat-lbl">كغ منقذة</div><div class="stat-chg">▲ 18%</div></div>
+        </div>
+        <!-- Actions -->
+        <div class="section-title" style="margin-top:16px"><span>الإجراءات السريعة</span></div>
+        <div class="action-cards">
+          <div class="action-card" onclick="goTo('screen-donate')">
+            <div class="ac-icon" style="background:rgba(245,166,35,.15)">🍽️</div>
+            <div class="ac-title">تسجيل تبرع</div>
+            <div class="ac-sub">شارك طعامك الفائض</div>
+          </div>
+          <div class="action-card" onclick="goTo('screen-volunteers')">
+            <div class="ac-icon" style="background:rgba(10,181,160,.15)">👥</div>
+            <div class="ac-title">المتطوعون</div>
+            <div class="ac-sub">إدارة مهام الاستلام</div>
+          </div>
+          <div class="action-card" onclick="goTo('screen-tracking')">
+            <div class="ac-icon" style="background:rgba(26,158,92,.15)">📍</div>
+            <div class="ac-title">تتبع الطلب</div>
+            <div class="ac-sub">مراقبة التسليم</div>
+          </div>
+          <div class="action-card" onclick="goTo('screen-certificate')">
+            <div class="ac-icon" style="background:rgba(245,166,35,.1)">🏆</div>
+            <div class="ac-title">شهادتي</div>
+            <div class="ac-sub">Sustainable Partner</div>
+          </div>
+        </div>
+        <!-- Live notif -->
+        <div class="section-title" style="margin-top:16px">
+          <span>إشعار حي</span>
+          <span class="section-link" onclick="goTo('screen-notification')">عرض الكل</span>
+        </div>
+        <div class="notif-live" onclick="goTo('screen-notification')">
+          <div class="notif-dot"></div>
+          <div>
+            <div class="notif-title">تبرع جديد متاح بالقرب منك</div>
+            <div class="notif-body">طعام متاح: 15كغ أرز وخضار — فندق روتانا أبوظبي — جاهز 11م</div>
+            <div class="notif-time">الآن</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DONATE ══════════════════════════════════ -->
+    <div class="screen" id="screen-donate">
+      <div class="header" style="background:var(--navy)">
+        <button class="header-btn" onclick="goTo('screen-home')">←</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn">☰</button>
+      </div>
+      <div style="height:8px;background:var(--navy)"></div>
+      <div class="white-sheet">
+        <div class="screen-title">تسجيل تبرع من فندق</div>
+        <div class="screen-sub">شارك طعامك الزائد، وكن سبباً في إحداث فرق 🌿</div>
+        <!-- Food type -->
+        <div style="margin-top:16px">
+          <div class="form-label">🍚 نوع الطعام</div>
+          <div class="food-grid">
+            <div class="food-item selected" onclick="selectFood(this)"><div class="fi-img">🍚</div><div class="fi-lbl">أرز</div></div>
+            <div class="food-item" onclick="selectFood(this)"><div class="fi-img">🥩</div><div class="fi-lbl">لحم</div></div>
+            <div class="food-item" onclick="selectFood(this)"><div class="fi-img">🥖</div><div class="fi-lbl">خبز</div></div>
+            <div class="food-item" onclick="selectFood(this)"><div class="fi-img">🥗</div><div class="fi-lbl">خضروات</div></div>
+          </div>
+        </div>
+        <!-- Quantity -->
+        <div style="margin-top:16px">
+          <div class="form-label">⚖️ الكمية</div>
+          <div class="slider-wrap">
+            <div class="qty-bubble" id="qty-bubble" style="left:25%">15 كجم</div>
+            <input type="range" class="qty-slider" id="qty-slider" min="1" max="50" value="15" oninput="updateSlider(this)">
+          </div>
+          <div class="slider-labels"><span>1</span><span>5</span><span>15</span><span>25</span><span>50 كجم</span></div>
+        </div>
+        <!-- Time -->
+        <div style="margin-top:16px">
+          <div class="form-label">🕐 وقت الاستلام</div>
+          <select class="time-select">
+            <option>10:00 PM</option><option selected>11:00 PM</option>
+            <option>11:30 PM</option><option>12:00 AM</option>
+          </select>
+        </div>
+        <!-- Notes -->
+        <div style="margin-top:14px">
+          <div class="form-label">💬 ملاحظات <span style="font-size:10px;color:var(--gray2);font-weight:400">(اختياري)</span></div>
+          <textarea class="form-input" rows="2" placeholder="ملاحظات حول الطعام أو طريقة التجهيز..."></textarea>
+        </div>
+        <!-- Hotel info -->
+        <div style="margin-top:14px;background:#f8f9fb;border-radius:var(--r);padding:14px">
+          <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:8px">🏨 بيانات الفندق</div>
+          <div class="hotel-row"><div class="hr-label">🏨 اسم الفندق</div><div class="hr-value">فندق النخيل</div></div>
+          <div class="hotel-row"><div class="hr-label">👤 المسؤول</div><div class="hr-value">أحمد خالد</div></div>
+          <div class="hotel-row"><div class="hr-label">📞 التواصل</div><div class="hr-value" style="direction:ltr">+966 50 123 4567</div></div>
+        </div>
+        <!-- Submit -->
+        <div style="margin-top:20px">
+          <button class="btn-gold" onclick="submitDonation()">📤 إرسال التبرع</button>
+          <div style="display:flex;align-items:center;gap:7px;justify-content:center;padding:10px 0;font-size:11px;color:var(--green);font-weight:600">
+            ✅ نضمن إيصال تبرعك لمستحقيه بأمان وكرامة
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NOTIFICATION ═══════════════════════════ -->
+    <div class="screen" id="screen-notification">
+      <div class="lockscreen">
+        <div class="ls-time">
+          <div class="ls-date">الأحد، 25 مايو</div>
+          <div class="ls-clock">11:49</div>
+        </div>
+        <div class="notif-popup">
+          <div class="np-header">
+            <div class="np-app">
+              <img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="">
+              <div><div class="np-name">Rescue Bite — رسكيو بايت</div></div>
+            </div>
+            <div class="np-time">الآن</div>
+          </div>
+          <div class="np-msg">طعام متاح: 15كغ أرز وخضار — فندق روتانا أبوظبي — جاهز 11م</div>
+          <button class="np-accept" onclick="goTo('screen-volunteers')">قبول ✓</button>
+          <button class="np-ignore" onclick="showToast('تم تجاهل الإشعار')">تجاهل</button>
+        </div>
+        <div style="height:30px"></div>
+        <div style="display:flex;justify-content:space-around;padding:0 20px">
+          <span style="font-size:26px;opacity:.5">🔦</span>
+          <span style="font-size:26px;opacity:.5">📷</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ VOLUNTEERS ══════════════════════════════ -->
+    <div class="screen" id="screen-volunteers">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-notification')">←</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" onclick="goTo('screen-tracking')">→</button>
+      </div>
+      <div style="padding:0 16px 20px">
+        <div style="font-size:20px;font-weight:900;text-align:center;margin-bottom:4px">اختيار متطوع قريب</div>
+        <div style="font-size:12px;color:var(--gray);text-align:center;margin-bottom:14px">يمكنك إسناد مهمة الاستلام لأحد المتطوعين القريبين</div>
+        <div class="accepted-banner" style="margin-bottom:14px">
+          <div class="ab-icon">🏨</div>
+          <div><div class="ab-title">✅ تم قبول مهمة الاستلام</div><div class="ab-sub">فندق النخيل — حي النزهة. الرجاء إسناد المهمة.</div></div>
+        </div>
+        <div style="font-size:13px;font-weight:800;margin-bottom:10px">📍 المتطوعون القريبون</div>
+        <div class="vol-card">
+          <div class="vol-ava">👤</div>
+          <div style="flex:1"><div class="vol-name">أحمد خالد</div><div class="vol-meta"><span>👥 متطوع</span><span>📍 2 كم</span></div></div>
+          <button class="btn-assign" onclick="assignVolunteer('أحمد خالد')">تعيين</button>
+        </div>
+        <div class="vol-card">
+          <div class="vol-ava">👤</div>
+          <div style="flex:1"><div class="vol-name">محمد سالم</div><div class="vol-meta"><span>👥 متطوع</span><span>📍 3 كم</span></div></div>
+          <button class="btn-assign" onclick="assignVolunteer('محمد سالم')">تعيين</button>
+        </div>
+        <div class="vol-card">
+          <div class="vol-ava">👤</div>
+          <div style="flex:1"><div class="vol-name">يوسف علي</div><div class="vol-meta"><span>👥 متطوع</span><span>📍 5 كم</span></div></div>
+          <button class="btn-assign" onclick="assignVolunteer('يوسف علي')">تعيين</button>
+        </div>
+        <div class="safety-bar">
+          <div class="sb-left">
+            <span style="font-size:20px">🛡️</span>
+            <div><div class="sb-title">سلامتك تهمنا</div><div class="sb-sub">يمكنك إلغاء المهمة في أي وقت</div></div>
+          </div>
+          <button class="btn-sm" onclick="showToast('📋 أرز 15كغ — فندق النخيل — 11م')">📋 تفاصيل</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TRACKING ════════════════════════════════ -->
+    <div class="screen" id="screen-tracking">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-volunteers')">←</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" onclick="showToast('❓ اتصل بنا: 800-RESCUE')">?</button>
+      </div>
+      <div style="padding:0 16px 20px">
+        <div style="font-size:20px;font-weight:900;text-align:center">تتبع المتطوع مباشرة</div>
+        <div style="font-size:12px;color:var(--gray);text-align:center;margin-top:3px;margin-bottom:14px">المتطوع في طريقه إليك الآن</div>
+        <div class="tracking-card">
+          <div class="tr-avatar">👤</div>
+          <div>
+            <div class="tr-lbl">الوصول المتوقع خلال</div>
+            <div class="tr-eta">18 <span class="tr-unit">دقيقة</span></div>
+            <div class="tr-badge"><span class="dot"></span> في الطريق</div>
+            <div style="font-size:10px;color:var(--gray2);margin-top:5px">قد يتغير حسب حركة المرور</div>
+          </div>
+        </div>
+        <div class="chips">
+          <div class="chip"><div class="chip-icon">👤</div><div class="chip-lbl">المتطوع</div><div class="chip-val">أحمد خالد</div></div>
+          <div class="chip"><div class="chip-icon">🚗</div><div class="chip-lbl">الحالة</div><div class="chip-val" style="color:var(--teal)">جاري التوصيل</div></div>
+          <div class="chip"><div class="chip-icon">⏱️</div><div class="chip-lbl">الوقت</div><div class="chip-val">18 دقيقة</div></div>
+        </div>
+        <!-- Map -->
+        <div class="map-box" onclick="showToast('🗺️ فتح الخريطة الكاملة')">
+          <svg class="map-svg" viewBox="0 0 400 180" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="180" fill="#1a2840"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="#253d5e" stroke-width="20"/>
+            <line x1="0" y1="50" x2="400" y2="50" stroke="#253d5e" stroke-width="12"/>
+            <line x1="200" y1="0" x2="200" y2="180" stroke="#253d5e" stroke-width="10"/>
+            <line x1="100" y1="0" x2="100" y2="180" stroke="#1e3050" stroke-width="6"/>
+            <line x1="300" y1="0" x2="300" y2="180" stroke="#1e3050" stroke-width="6"/>
+            <polyline points="120,120 200,90 280,70" fill="none" stroke="#0ab5a0" stroke-width="3" stroke-dasharray="8,4"/>
+            <circle cx="120" cy="120" r="9" fill="#0ab5a0" stroke="white" stroke-width="2"/>
+            <circle cx="280" cy="70" r="11" fill="#f5a623" stroke="white" stroke-width="2.5"/>
+            <rect x="50" y="108" width="110" height="20" rx="5" fill="#0d1b2e" fill-opacity=".9"/>
+            <text x="105" y="122" text-anchor="middle" fill="white" font-size="9" font-family="Cairo">المتطوع في الطريق</text>
+            <rect x="220" y="55" width="100" height="20" rx="5" fill="#0d1b2e" fill-opacity=".9"/>
+            <text x="270" y="69" text-anchor="middle" fill="white" font-size="9" font-family="Cairo">موقع الاستلام</text>
+            <text x="30" y="30" fill="#6b7c93" font-size="8" font-family="Cairo">شارع الملك فهد</text>
+          </svg>
+        </div>
+        <div class="safety-bar" style="margin-top:10px;margin-bottom:20px">
+          <div class="sb-left">
+            <span style="font-size:20px">🛡️</span>
+            <div><div class="sb-title">سلامتك تهمنا</div><div class="sb-sub">شارك رحلتك مع أحد الأصدقاء</div></div>
+          </div>
+          <button class="btn-sm" onclick="showToast('📤 تم مشاركة رابط التتبع')">📤 مشاركة</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CONFIRM RECEIPT ════════════════════════ -->
+    <div class="screen" id="screen-confirm">
+      <div class="header" style="background:var(--navy)">
+        <div style="width:36px"></div>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" onclick="showToast('📤 مشاركة الإيصال')">📤</button>
+      </div>
+      <div style="height:8px;background:var(--navy)"></div>
+      <div class="white-sheet">
+        <div class="screen-title">تأكيد استلام الطعام</div>
+        <div class="screen-sub">أرفق صورة وأكّد الوزن لإتمام عملية الاستلام</div>
+        <div style="margin-top:16px">
+          <div class="photo-upload" onclick="showToast('📸 فتح الكاميرا...')">
+            <div class="pu-icon">📷</div>
+            <div class="pu-title">إرفاق صورة الاستلام</div>
+            <div class="pu-sub">اضغط لالتقاط صورة أو اختيار من المعرض</div>
+          </div>
+          <div style="font-size:13px;font-weight:800;color:var(--navy);margin-bottom:8px">تأكيد الوزن</div>
+          <div class="weight-box">
+            <span style="font-size:20px">⚖️</span>
+            <input type="number" class="wb-input" value="14.8" step="0.1">
+            <span class="wb-unit">كغ</span>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="receipt">
+            <div class="receipt-hdr">
+              <div class="receipt-title">🏆 إيصال الاستلام</div>
+            </div>
+            <div class="receipt-body">
+              <div class="receipt-rows">
+                <div class="rr"><div class="rr-lbl">📋 رقم استلام</div><div class="rr-val" style="direction:ltr;font-size:10px">RB-2025-05-24-0017</div></div>
+                <div class="rr"><div class="rr-lbl">📅 التاريخ</div><div class="rr-val">24 مايو 2025 — 09:41</div></div>
+                <div class="rr"><div class="rr-lbl">📍 المكان</div><div class="rr-val">فندق حياة ريجنسي</div></div>
+                <div class="rr"><div class="rr-lbl">👤 الاستلام</div><div class="rr-val">أحمد محمد</div></div>
+              </div>
+              <div class="receipt-qr" onclick="showToast('📱 QR للتحقق من الإيصال')">▦</div>
+            </div>
+            <div style="font-size:9px;color:var(--gray2);text-align:center;margin-top:6px">امسح رمز QR للتحقق</div>
+          </div>
+        </div>
+        <div style="margin-top:18px">
+          <button style="width:100%;padding:15px;background:var(--navy);color:var(--white);border:none;border-radius:var(--r2);font-family:Cairo,sans-serif;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" onclick="goTo('screen-success')">✅ تأكيد الاستلام</button>
+          <button class="btn-ghost" style="color:#999" onclick="goTo('screen-home')">إلغاء العملية</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SUCCESS ════════════════════════════════ -->
+    <div class="screen" id="screen-success">
+      <div class="header" style="background:var(--white);border-bottom:1px solid #eee">
+        <button class="header-btn" style="background:#f0f0f0" onclick="showToast('🔔 الإشعارات')">🔔</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" style="background:#f0f0f0">☰</button>
+      </div>
+      <div class="white-sheet" style="border-radius:0">
+        <div class="success-icon">✅</div>
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="font-size:20px;font-weight:900;color:var(--navy)">تم تأكيد الطلب بنجاح!</div>
+          <div style="font-size:12px;color:var(--gray2);margin-top:4px">شكراً لك على مساهمتك في إنقاذ الطعام 🌿</div>
+        </div>
+        <div style="background:#f8f9fb;border-radius:var(--r);padding:14px;border:1.5px solid #e8ecf0">
+          <div class="detail-row"><div class="dr-lbl">🍚 نوع الطعام</div><div class="dr-val">أرز</div></div>
+          <div class="detail-row"><div class="dr-lbl">⚖️ الكمية</div><div class="dr-val">15 كجم</div></div>
+          <div class="detail-row"><div class="dr-lbl">🕐 وقت الاستلام</div><div class="dr-val">11:00 PM</div></div>
+          <div class="detail-row"><div class="dr-lbl">📍 موقع الفندق</div><div class="dr-val">فندق جميرا بيتش، دبي</div></div>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:7px">📍 موقع الفندق</div>
+          <div class="map-mini">
+            <svg width="100%" height="100%" viewBox="0 0 360 140" preserveAspectRatio="xMidYMid slice">
+              <rect width="360" height="140" fill="#d4e8f0"/>
+              <rect x="0" y="60" width="360" height="20" fill="#b0c8d8"/>
+              <rect x="0" y="100" width="360" height="14" fill="#b0c8d8"/>
+              <rect x="160" y="0" width="14" height="140" fill="#b0c8d8"/>
+              <rect x="60" y="0" width="10" height="140" fill="#c8dce8"/>
+              <rect x="280" y="0" width="10" height="140" fill="#c8dce8"/>
+              <rect x="30" y="20" width="60" height="40" rx="3" fill="#b8cdd8"/>
+              <rect x="210" y="15" width="70" height="45" rx="3" fill="#b8cdd8"/>
+              <text x="183" y="55" text-anchor="middle" fill="#1a2840" font-size="9" font-family="Cairo" font-weight="700">Jumeirah Beach</text>
+            </svg>
+            <div style="position:absolute;top:28%;left:52%;transform:translate(-50%,-100%);font-size:26px">📍</div>
+          </div>
+        </div>
+        <div style="margin-top:18px">
+          <button class="btn-gold" onclick="goTo('screen-reports')">📊 عرض التقرير الشهري</button>
+          <button class="btn-ghost" style="color:#999" onclick="goTo('screen-home')">العودة للرئيسية</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS ════════════════════════════════ -->
+    <div class="screen" id="screen-reports">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-home')">←</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" onclick="showToast('📅 اختر شهراً')">📅</button>
+      </div>
+      <div style="padding:0 16px 24px">
+        <div style="font-size:20px;font-weight:900;text-align:center">التقرير الشهري</div>
+        <div class="month-nav" style="margin-top:10px">
+          <button class="month-btn" onclick="showToast('← أبريل 2024')">‹</button>
+          <div class="month-lbl">مايو 2024</div>
+          <button class="month-btn" onclick="showToast('يونيو 2024 →')">›</button>
+        </div>
+        <div class="chart-wrap">
+          <div class="chart-hdr">
+            <span class="chart-hdr-txt">التبرعات الغذائية الأسبوعية</span>
+            <span>📊</span>
+          </div>
+          <div class="bars">
+            <div class="bar-group"><div class="bar" style="height:40%" data-v="40"></div><div class="bar-lbl">أسبوع 1<br>1-7 مايو</div></div>
+            <div class="bar-group"><div class="bar" style="height:55%" data-v="55"></div><div class="bar-lbl">أسبوع 2<br>8-14 مايو</div></div>
+            <div class="bar-group"><div class="bar" style="height:65%" data-v="65"></div><div class="bar-lbl">أسبوع 3<br>15-21 مايو</div></div>
+            <div class="bar-group"><div class="bar" style="height:80%" data-v="80"></div><div class="bar-lbl">أسبوع 4<br>22-31 مايو</div></div>
+          </div>
+          <div class="chart-legend"><div class="legend-dot"></div> إجمالي الطعام المنقذ (كغ)</div>
+        </div>
+        <div class="report-stats">
+          <div class="rs"><div class="rs-icon">👥</div><div class="rs-num">180</div><div class="rs-lbl">مستفيد</div><div class="rs-chg">▲ 15%</div></div>
+          <div class="rs"><div class="rs-icon">🏨</div><div class="rs-num">12</div><div class="rs-lbl">فندق</div><div class="rs-chg">▲ 20%</div></div>
+          <div class="rs"><div class="rs-icon">♻️</div><div class="rs-num">240</div><div class="rs-lbl">كغ</div><div class="rs-chg">▲ 18%</div></div>
+        </div>
+        <div class="impact-card">
+          <span style="font-size:34px">🌳</span>
+          <div>
+            <div class="impact-title">❤️ معاً نصنع فرقاً</div>
+            <div class="impact-body">بفضلكم تم إنقاذ 240 كغ من الطعام هذا الشهر والمساهمة في دعم مجتمعنا.</div>
+            <div class="impact-tag">#طعام_منقذ_حياة</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;margin-bottom:4px">
+          <button class="btn-gold" onclick="showToast('📥 جاري تحميل التقرير PDF...')">📥 تحميل PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CERTIFICATE ════════════════════════════ -->
+    <div class="screen" id="screen-certificate">
+      <div class="header">
+        <button class="header-btn" onclick="goTo('screen-home')">←</button>
+        <div class="header-logo"><img src="https://i.ibb.co/C5x8xvdv/logo.png" alt="" style="height:100px"></div>
+        <button class="header-btn" onclick="showToast('📤 مشاركة الشهادة')">📤</button>
+      </div>
+      <div class="cert-wrap">
+        <div class="cert-badge">🏆</div>
+        <div class="cert-en">Sustainable Food Partner</div>
+        <div class="cert-ar">شريك الغذاء المستدام</div>
+        <div class="cert-sub">شهادة تقدير لمساهمتك في إنقاذ الطعام ودعم الاستدامة</div>
+        <div class="cert-divider">إحصائيات هذا الشهر</div>
+        <div class="cert-stat">
+          <div class="cs-emoji">🌳</div>
+          <div><div class="cs-num">240 kg</div><div class="cs-lbl">food saved</div><div class="cs-sub">240 كجم طعام تم إنقاذه</div></div>
+          <div style="margin-right:auto;font-size:20px">🌿</div>
+        </div>
+        <div class="cert-stat">
+          <div class="cs-emoji">🌳</div>
+          <div><div class="cs-num">180</div><div class="cs-lbl">people helped</div><div class="cs-sub">180 شخصاً تمت مساعدتهم</div></div>
+          <div style="margin-right:auto;font-size:20px">👥</div>
+        </div>
+        <div class="together">
+          <span style="font-size:26px">🌿</span>
+          <div>
+            <div class="tog-title">❤️ معاً نصنع فرقاً حقيقياً</div>
+            <div class="tog-body">شكراً لك على كونك جزءاً من التغيير الإيجابي من أجل مستقبل أفضل للجميع.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;margin-bottom:4px">
+          <button class="btn-gold" onclick="showToast('📤 تم مشاركة شهادتك بنجاح!')">📤 مشاركة الشهادة</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .screens -->
+
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="navTo('screen-home','nav-home')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      الرئيسية
+    </button>
+    <button class="nav-item" id="nav-notif" onclick="navTo('screen-notification','nav-notif')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      التنبيهات
+      <div class="nav-badge"></div>
+    </button>
+    <button class="nav-item" id="nav-tasks" onclick="navTo('screen-confirm','nav-tasks')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      المهام
+    </button>
+    <button class="nav-item" id="nav-reports" onclick="navTo('screen-reports','nav-reports')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+      تقارير
+    </button>
+    <button class="nav-item" id="nav-more" onclick="navTo('screen-certificate','nav-more')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      المزيد
+    </button>
+  </div>
+
+</div><!-- end .app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const s = document.getElementById(id);
+  if (s) { s.classList.add('active'); s.scrollTop = 0; }
+}
+
+function navTo(screenId, navId) {
+  goTo(screenId);
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const n = document.getElementById(navId);
+  if (n) n.classList.add('active');
+}
+
+let toastT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function selectFood(el) {
+  document.querySelectorAll('.food-item').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function updateSlider(input) {
+  const v = input.value, p = ((v-1)/(50-1))*100;
+  input.style.background = `linear-gradient(to right,var(--gold) 0%,var(--gold) ${p}%,#e0e0e0 ${p}%,#e0e0e0 100%)`;
+  const b = document.getElementById('qty-bubble');
+  if (b) { b.textContent = v+' كجم'; b.style.left = `calc(${p}% - 26px)`; }
+}
+
+function submitDonation() {
+  showToast('✅ تم إرسال التبرع بنجاح!');
+  setTimeout(() => goTo('screen-success'), 700);
+}
+
+function assignVolunteer(name) {
+  showToast('✅ تم تعيين ' + name + ' بنجاح!');
+  setTimeout(() => goTo('screen-tracking'), 800);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const s = document.getElementById('qty-slider');
+  if (s) updateSlider(s);
+});
+</script>
+</body>
+</html>
